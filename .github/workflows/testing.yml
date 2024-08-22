@@ -1,0 +1,24 @@
+name: Formating And Testing
+
+on: [push]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Installing dependencies
+        run: npm install
+      - name: Checking Formating
+        run: npm run format
+      - name: Running testcases
+        run: npm run test
