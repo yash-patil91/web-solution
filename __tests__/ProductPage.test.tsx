@@ -1,16 +1,18 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { useParams, useRouter } from 'next/navigation';
 import ProductPage from '../src/app/items/[id]/page';
 import { ProductProvider } from '../src/context/ProductContext';
 
-// Mock the next/navigation hooks
+// Mock the next/navigation module
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(),
   useRouter: jest.fn(() => ({
     back: jest.fn(),
   })),
 }));
+
+// Import the mocked modules
+import { useParams, useRouter } from 'next/navigation';
 
 // Mock product data
 const mockProduct = {
@@ -32,7 +34,10 @@ const mockProduct = {
 };
 
 // Mock the ProductContext
-jest.mock('../../../context/ProductContext', () => ({
+jest.mock('../src/context/ProductContext', () => ({
+  ProductProvider: ({ children }: any) => (
+    <div data-testid="mock-provider">{children}</div>
+  ),
   useProductContext: () => ({
     products: [mockProduct],
   }),
@@ -47,7 +52,7 @@ describe('ProductPage', () => {
     render(
       <ProductProvider>
         <ProductPage />
-      </ProductProvider>
+      </ProductProvider>,
     );
   };
 
@@ -63,7 +68,9 @@ describe('ProductPage', () => {
       expect(screen.getByText('Rating: 4.5')).toBeInTheDocument();
       expect(screen.getByText('Stock: 100')).toBeInTheDocument();
       expect(screen.getByText('Warranty: 1 year warranty')).toBeInTheDocument();
-      expect(screen.getByText('Shipping Info: Free shipping')).toBeInTheDocument();
+      expect(
+        screen.getByText('Shipping Info: Free shipping'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -85,7 +92,9 @@ describe('ProductPage', () => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
       expect(screen.getByText('(5/5) - Great product!')).toBeInTheDocument();
       expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-      expect(screen.getByText('(4/5) - Good value for money')).toBeInTheDocument();
+      expect(
+        screen.getByText('(4/5) - Good value for money'),
+      ).toBeInTheDocument();
     });
   });
 

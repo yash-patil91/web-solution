@@ -14,14 +14,25 @@ jest.mock('next/link', () => {
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({
-      products: [
-        { id: 1, title: 'iPhone', price: 999.99, images: ['iphone.jpg'] },
-        { id: 2, title: 'Samsung Galaxy', price: 899.99, images: ['samsung.jpg'] },
-        { id: 3, title: 'Google Pixel', price: 799.99, images: ['pixel.jpg'] },
-      ],
-    }),
-  })
+    json: () =>
+      Promise.resolve({
+        products: [
+          { id: 1, title: 'iPhone', price: 999.99, images: ['iphone.jpg'] },
+          {
+            id: 2,
+            title: 'Samsung Galaxy',
+            price: 899.99,
+            images: ['samsung.jpg'],
+          },
+          {
+            id: 3,
+            title: 'Google Pixel',
+            price: 799.99,
+            images: ['pixel.jpg'],
+          },
+        ],
+      }),
+  }),
 ) as jest.Mock;
 
 describe('SearchPage', () => {
@@ -29,7 +40,7 @@ describe('SearchPage', () => {
     return render(
       <ProductProvider>
         <SearchPage />
-      </ProductProvider>
+      </ProductProvider>,
     );
   };
 
@@ -50,15 +61,35 @@ describe('SearchPage', () => {
   });
 
   it('filters products based on search query', async () => {
-    renderWithProvider();
+    const { getByLabelText } = renderWithProvider();
+
     await waitFor(() => {
-      const searchInput = screen.getByLabelText('Search Products');
-      fireEvent.change(searchInput, { target: { value: 'iphone' } });
+      expect(screen.getByText('iPhone')).toBeInTheDocument();
     });
-    
-    expect(screen.getByText('iPhone')).toBeInTheDocument();
-    expect(screen.queryByText('Samsung Galaxy')).not.toBeInTheDocument();
-    expect(screen.queryByText('Google Pixel')).not.toBeInTheDocument();
+
+    const searchInput = getByLabelText('Search Products');
+    fireEvent.change(searchInput, { target: { value: 'iphone' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('iPhone')).toBeInTheDocument();
+      expect(screen.queryByText('Samsung Galaxy')).not.toBeInTheDocument();
+      expect(screen.queryByText('Google Pixel')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows no results when search query matches no products', async () => {
+    const { getByLabelText } = renderWithProvider();
+
+    await waitFor(() => {
+      expect(screen.getByText('iPhone')).toBeInTheDocument();
+    });
+
+    const searchInput = getByLabelText('Search Products');
+    fireEvent.change(searchInput, { target: { value: 'Nonexistent Product' } });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    });
   });
 
   it('displays product prices correctly', async () => {
@@ -71,24 +102,21 @@ describe('SearchPage', () => {
   });
 
   it('handles case-insensitive search', async () => {
-    renderWithProvider();
-    await waitFor(() => {
-      const searchInput = screen.getByLabelText('Search Products');
-      fireEvent.change(searchInput, { target: { value: 'GALAXY' } });
-    });
-    
-    expect(screen.getByText('Samsung Galaxy')).toBeInTheDocument();
-    expect(screen.queryByText('iPhone')).not.toBeInTheDocument();
-    expect(screen.queryByText('Google Pixel')).not.toBeInTheDocument();
-  });
+    const { getByLabelText } = renderWithProvider();
 
-  it('shows no results when search query matches no products', async () => {
-    renderWithProvider();
+    // Wait for the products to load
     await waitFor(() => {
-      const searchInput = screen.getByLabelText('Search Products');
-      fireEvent.change(searchInput, { target: { value: 'Nonexistent Product' } });
+      expect(screen.getByText('Samsung Galaxy')).toBeInTheDocument();
     });
-    
-    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+
+    const searchInput = getByLabelText('Search Products');
+    fireEvent.change(searchInput, { target: { value: 'GALAXY' } });
+
+    // Wait for the filtering to take effect
+    await waitFor(() => {
+      expect(screen.getByText('Samsung Galaxy')).toBeInTheDocument();
+      expect(screen.queryByText('iPhone')).not.toBeInTheDocument();
+      expect(screen.queryByText('Google Pixel')).not.toBeInTheDocument();
+    });
   });
 });

@@ -14,17 +14,18 @@ jest.mock('next/link', () => {
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({
-      products: [
-        {
-          id: 1,
-          title: 'Test Product',
-          price: 9.99,
-          images: ['test-image.jpg'],
-        },
-      ],
-    }),
-  })
+    json: () =>
+      Promise.resolve({
+        products: [
+          {
+            id: 1,
+            title: 'Test Product',
+            price: 9.99,
+            images: ['test-image.jpg'],
+          },
+        ],
+      }),
+  }),
 ) as jest.Mock;
 
 const theme = createTheme();
@@ -34,7 +35,7 @@ describe('HomePage', () => {
     render(
       <ThemeProvider theme={theme}>
         <HomePage />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
     expect(screen.getByText('Loading Products...')).toBeInTheDocument();
   });
@@ -43,7 +44,7 @@ describe('HomePage', () => {
     render(
       <ThemeProvider theme={theme}>
         <HomePage />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     await waitFor(() => {
@@ -58,13 +59,13 @@ describe('HomePage', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ products: [] }),
-      })
+      }),
     );
 
     render(
       <ThemeProvider theme={theme}>
         <HomePage />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     await waitFor(() => {
