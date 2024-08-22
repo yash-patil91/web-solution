@@ -1,76 +1,85 @@
-// src/app/search/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Container, TextField, Grid, Typography, Card, CardContent, CardMedia } from '@mui/material';
+import { useState } from 'react';
+import { useProductContext } from '../../context/ProductContext';
+import { Container, TextField,useTheme,IconButton,Box, Grid, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import Link from 'next/link';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
-interface Product {
-    id: number;
-    title: string;
-    description: string;
-    price: number;
-    images: string[];
-}
 
-async function fetchProducts() {
-    const response = await fetch('https://dummyjson.com/products');
-    const data = await response.json();
-    return data.products as Product[];
-}
+export default function SearchPage() {
+    const { products } = useProductContext();
+    const [query, setQuery] = useState('');
+  const theme = useTheme();
 
-export default function Search() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        async function loadProducts() {
-            const fetchedProducts = await fetchProducts();
-            setProducts(fetchedProducts);
-        }
-        loadProducts();
-    }, []);
-
-    const filteredProducts = products.filter((product) =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredProducts = products.filter(product =>
+        product.title.toLowerCase().includes(query.toLowerCase())
     );
 
     return (
         <Container>
-            <Typography variant="h4" component="h1" gutterBottom>
-                Search Products
-            </Typography>
+             <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={4}
+        p={2}
+        sx={{
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: theme.shadows[1]
+        }}
+      >
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{ fontWeight: 700 }}
+        >
+          Search Product Here
+        </Typography>
+        <Link href="/" passHref>
+          <IconButton
+            color="primary"
+            aria-label="search products"
+            sx={{
+              transition: 'background-color 0.3s',
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+              }
+            }}
+          >
+            <ArrowBackIosIcon />
+          </IconButton>
+        </Link>
+      </Box>
             <TextField
                 fullWidth
-                label="Search by title"
                 variant="outlined"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                label="Search Products"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
                 margin="normal"
             />
-            <Grid container spacing={4}>
-                {filteredProducts.map((product) => (
+            <Grid container spacing={4} mt={2}>
+                {filteredProducts.map(product => (
                     <Grid item xs={12} sm={6} md={4} key={product.id}>
-                        <Link href={`/items/${product.id}`} passHref>
+                        <Link href={`/items/${product.id}`} passHref style={{color:"black",textDecoration:"none"}}>
                             <Card>
                                 <CardMedia
                                     component="img"
                                     alt={product.title}
-                                    height="200"
+                                    height="140"
                                     image={product.images[0]}
                                 />
                                 <CardContent>
-
-                                    <Typography
-                                        variant="h6"
-                                        component="h2"
-                                        style={{ cursor: 'pointer' }}
-                                    >
+                                    <Typography variant="h6" component="h2">
                                         {product.title}
                                     </Typography>
-
-                                    <Typography variant="body2">{product.description}</Typography>
-                                    <Typography variant="body1">${product.price.toFixed(2)}</Typography>
+                                    <Typography variant="body2" color="textSecondary">
+                                        ${product.price.toFixed(2)}
+                                    </Typography>
                                 </CardContent>
                             </Card>
                         </Link>

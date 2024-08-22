@@ -1,45 +1,77 @@
 // src/app/items/[id]/page.tsx
-import { Container, Typography, Card, CardMedia, CardContent, List, ListItem } from '@mui/material';
+"use client";
+
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useProductContext } from '../../../context/ProductContext';
+import { Container, Typography, Card, CardContent, CardMedia, Box, Button, List, ListItem } from '@mui/material';
 
 interface Product {
   id: number;
   title: string;
   description: string;
-  price: number;
-  images: string[];
   category: string;
-  brand: string;
+  price: number;
+  discountPercentage: number;
   rating: number;
   stock: number;
+  tags: string[];
+  brand: string;
+  sku: string;
+  weight: number;
+  dimensions: {
+    width: number;
+    height: number;
+    depth: number;
+  };
   warrantyInformation: string;
   shippingInformation: string;
+  availabilityStatus: string;
   reviews: Array<{
     rating: number;
     comment: string;
     date: string;
     reviewerName: string;
+    reviewerEmail: string;
   }>;
+  returnPolicy: string;
+  minimumOrderQuantity: number;
+  meta: {
+    createdAt: string;
+    updatedAt: string;
+    barcode: string;
+    qrCode: string;
+  };
+  images: string[];
+  thumbnail: string;
 }
 
-async function fetchProduct(id: string) {
-  const response = await fetch(`https://dummyjson.com/products/${id}`);
-  const product: Product = await response.json();
-  return product;
-}
+export default function ProductPage() {
+  const { id } = useParams();  // Use useParams to get the dynamic route parameter
+  const { products } = useProductContext();
+  const [product, setProduct] = useState<Product | null>(null);
 
-export default async function ItemDetail({ params }: { params: { id: string } }) {
-  const product = await fetchProduct(params.id);
+  useEffect(() => {
+    if (products.length) {
+      const foundProduct = products.find(p => p.id.toString() === id);
+      setProduct(foundProduct || null);
+    }
+  }, [products, id]);
+
+  if (!product) return <Typography variant="h6">Product not found</Typography>;
 
   return (
     <Container>
-      <Typography variant="h4" component="h1" gutterBottom>
-        {product.title}
-      </Typography>
+      <Box mb={2}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          {product.title}
+        </Typography>
+      </Box>
       <Card>
         <CardMedia
           component="img"
           alt={product.title}
-          height="400"
+          height="300"
           image={product.images[0]}
         />
         <CardContent>
@@ -64,6 +96,9 @@ export default async function ItemDetail({ params }: { params: { id: string } })
           </List>
         </CardContent>
       </Card>
+      <button style={{background:"#282c34",padding:"0.5rem",margin:"1rem 0",color:"white",cursor:"pointer"}} onClick={() => window.history.back()} >
+        Back
+      </button>
     </Container>
   );
 }
