@@ -1,95 +1,69 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+// src/app/page.tsx
+"use client";
 
-export default function Home() {
+import { Container, Grid, Typography, Card, CardContent, CardMedia, Box } from '@mui/material';
+import Link from 'next/link';
+import SearchIcon from '@mui/icons-material/Search';
+
+interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  discountPercentage: number;
+  rating: number;
+  stock: number;
+  images: string[];
+}
+
+async function fetchProducts() {
+  const response = await fetch('https://dummyjson.com/products');
+  const data = await response.json();
+  return data.products as Product[];
+}
+
+export default async function Home() {
+  const products = await fetchProducts();
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <Container>
+      <Box display='flex' justifyContent='space-between' alignItems='center' mb={4}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Product List
+        </Typography>
+        <Link href="/search" passHref>
+          <Typography variant="h6" style={{ cursor: 'pointer' }}>
+            <SearchIcon />
+          </Typography>
+        </Link>
+      </Box>
+      <Grid container spacing={4}>
+        {products.map((product) => (
+          <Grid item xs={12} sm={6} md={4} key={product.id}>
+            <Card>
+              <CardMedia
+                component="img"
+                alt={product.title}
+                height="200"
+                image={product.images[0]}
+              />
+              <CardContent>
+                <Link href={`/items/${product.id}`} passHref>
+                  <Typography
+                    variant="h6"
+                    component="h2"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {product.title}
+                  </Typography>
+                </Link>
+                <Typography variant="body2">{product.description}</Typography>
+                <Typography variant="body1">${product.price.toFixed(2)}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
   );
 }
